@@ -18,18 +18,12 @@ public:
     quint16 getPort() const { return port; } /*!< Метод, возвращающий порт системы */
     QAbstractSocket::SocketType getProtocol() const { return protocol; } /*!< Метод, возвращающий испоьзуемый проткоол */
 
+    void write(QJsonObject &json_network_config);
     QString toString() const;
 
 private:
     template<typename... T>
-    static std::shared_ptr<NetworkConfig> create(T&&... t)
-    {
-        struct EnableMakeShared : public NetworkConfig {
-            EnableMakeShared(T&&... args) : NetworkConfig(std::forward<T>(args)...) { }
-        };
-
-        return std::make_shared<EnableMakeShared>(std::forward<T>(t)...);
-    }
+    inline static std::shared_ptr<NetworkConfig> create(T&&... t);
 
     NetworkConfig(const QHostAddress &adress,
                   const quint16 port,

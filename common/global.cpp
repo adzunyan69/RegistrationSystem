@@ -1,6 +1,6 @@
 #include "global.h"
 
-const QString Common::Global::system_params_dir{ "/cfg/system-widgets/"};
+const QString Common::Global::system_params_dir{ QDir::currentPath() + "/cfg/system-widgets/"};
 
 const QString Common::Global::SystemsParamsDir()
 {
@@ -31,8 +31,6 @@ const QString Common::Global::SystemsParamsDir()
  * QSettings AppConfig::settings { "file.ini" };
  *
 */
-
-// Возможно, стоит перенести в .cpp файл
 
 /*! \brief
  * Мапа с параметр-название

@@ -17,6 +17,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     common/global.cpp \
+    gui/system_config/systemconfigwidget.cpp \
     main.cpp \
     reg/networkconfig.cpp \
     reg/properties.cpp \
@@ -26,6 +27,7 @@ SOURCES += \
 HEADERS += \
     common/config.h \
     common/global.h \
+    gui/system_config/systemconfigwidget.h \
     reg/networkconfig.h \
     reg/properties.h \
     reg/systemconfig.h \

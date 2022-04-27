@@ -11,40 +11,41 @@ namespace Reg {
 class SystemConfig
 {
 public:
-    static std::shared_ptr<SystemConfig> fromJson(const QByteArray &jsonData);
-    static std::shared_ptr<SystemConfig> fromJson(const QByteArray &jsonData, QString &error);
+    static std::shared_ptr<SystemConfig> fromJson(const QString &filename);
+    static std::shared_ptr<SystemConfig> fromJson(const QString &filename, QString &error);
+
+    bool save();
 
     QString getLabel() const { return label; }
     QString getSystemName() const { return system_name; }
     bool isEnabled() const { return enabled; }
-    auto getNetworkConfig() const { return network_config; }
-    auto getProperties() const { return properties->getProperties(); }
+    auto& getNetworkConfig() { return network_config; }
+    auto& getPropertiesConfig() { return properties; }
+    auto& getProperties() { return properties->getProperties(); }
 
     QString toString();
 
 private:
+    void write(QJsonObject &json_system_config);
+    static QJsonObject getJsonSystemConfig(const QString &filename, QString &error);
+
     template<typename... T>
-    static std::shared_ptr<SystemConfig> create(T&&... t)
-    {
-        struct EnableMakeShared : public SystemConfig {
-            EnableMakeShared(T&&... args) : SystemConfig(std::forward<T>(args)...) { }
-        };
+    static std::shared_ptr<SystemConfig> create(T&&... t);
 
-        return std::make_shared<EnableMakeShared>(std::forward<T>(t)...);
-    }
-
-    SystemConfig(const bool enabled,
+    SystemConfig(const QString &filename,
+                 const bool enabled,
                  const QString &system_name,
                  const QString &label,
                  const std::shared_ptr<NetworkConfig> &network_config,
                  const std::shared_ptr<Properties> &properties);
 
+    const QString filename{};
     bool enabled{ true };
     const QString system_name{ "undefined-system-name" };
     const QString label{ "undefined-system-label" };
 
-    const std::shared_ptr<NetworkConfig> network_config{ nullptr };
-    const std::shared_ptr<Properties> properties{ nullptr };
+    std::shared_ptr<NetworkConfig> network_config{ nullptr };
+    std::shared_ptr<Properties> properties{ nullptr };
 };
 
 } // namespace Reg

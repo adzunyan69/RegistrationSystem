@@ -2,6 +2,10 @@
 #define REGISTRATIONSYSTEM_H
 
 #include <QMainWindow>
+#include <QGridLayout>
+#include <QSpacerItem>
+#include <QPushButton>
+#include "gui/system_config/systemconfigwidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class RegistrationSystem; }
@@ -17,5 +21,10 @@ public:
 
 private:
     Ui::RegistrationSystem *ui;
+
+    SystemConfigWidget* system_config_widget{ nullptr };
+
+private slots:
+    void test();
 };
 #endif // REGISTRATIONSYSTEM_H

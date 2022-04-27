@@ -2,6 +2,14 @@
 
 namespace Reg {
 
+NetworkConfig::NetworkConfig(const QHostAddress &adress,
+                             const quint16 port,
+                             const QAbstractSocket::SocketType protocol)
+    : adress(adress),
+      port(port),
+      protocol(protocol)
+{ }
+
 std::shared_ptr<NetworkConfig> NetworkConfig::fromJson(const QJsonObject &json, QString &error)
 {
     const QHostAddress adress{ json["ip"].toString() };
@@ -14,12 +22,9 @@ std::shared_ptr<NetworkConfig> NetworkConfig::fromJson(const QJsonObject &json, 
 
     auto networkConfig = create(adress, port, protocol);
     if(networkConfig->isValidAdressAndPort() &&
-       networkConfig->isValidProtocol())
-    {
+       networkConfig->isValidProtocol()) {
         return networkConfig;
-    }
-    else
-    {
+    } else {
         error = QString("Неверные сетевые параметры: { adress: %1, port: %2, protocol: %3 / %4 }")
                 .arg(adress.toString())
                 .arg(QString::number(port))
@@ -30,14 +35,15 @@ std::shared_ptr<NetworkConfig> NetworkConfig::fromJson(const QJsonObject &json, 
     }
 }
 
-NetworkConfig::NetworkConfig(const QHostAddress &adress,
-                             const quint16 port,
-                             const QAbstractSocket::SocketType protocol)
-    : adress(adress),
-      port(port),
-      protocol(protocol)
-{ }
+template<typename... T>
+std::shared_ptr<NetworkConfig> NetworkConfig::create(T&&... t)
+{
+    struct EnableMakeShared : public NetworkConfig {
+        EnableMakeShared(T&&... args) : NetworkConfig(std::forward<T>(args)...) { }
+    };
 
+    return std::make_shared<EnableMakeShared>(std::forward<T>(t)...);
+}
 
 bool NetworkConfig::isValidAdressAndPort() const
 {
@@ -50,6 +56,13 @@ bool NetworkConfig::isValidProtocol() const
 {
     return (protocol == QAbstractSocket::TcpSocket ||
             protocol == QAbstractSocket::UdpSocket);
+}
+
+void NetworkConfig::write(QJsonObject &json_network_config)
+{
+    json_network_config["ip"] = adress.toString();
+    json_network_config["port"] = port;
+    json_network_config["protocol"] = protocol == QAbstractSocket::UdpSocket ? "udp" : "tcp";
 }
 
 QString NetworkConfig::toString() const
