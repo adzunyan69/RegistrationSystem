@@ -10,15 +10,13 @@ RegistrationSystem::RegistrationSystem(QWidget *parent)
 
     QGridLayout* grid_layout{ new QGridLayout(centralWidget()) };
 
-    system_config_widget = new SystemConfigWidget(Reg::SystemConfig::fromJson("correct_full.json"), this);
+    system_config_widget = new SystemConfigWidgetList(this);
     auto button{ new QPushButton("тыгыдык", this)};
     connect(button, &QPushButton::clicked,
             this, &RegistrationSystem::test);
 
     grid_layout->addWidget(system_config_widget);
-    grid_layout->addItem(new QSpacerItem(0, 10, QSizePolicy::Expanding, QSizePolicy::Expanding), 1, 0);
     grid_layout->addWidget(button, 2, 0);
-
 }
 
 RegistrationSystem::~RegistrationSystem()
@@ -28,7 +26,8 @@ RegistrationSystem::~RegistrationSystem()
 
 void RegistrationSystem::test()
 {
-    auto cfg = system_config_widget->getSystemConfig();
-    qInfo().noquote() << "new settings: " << cfg->toString();
+    auto cfg = system_config_widget->getSystemConfigs();
+    for(auto config: cfg)
+        qInfo().noquote() << config->toString();
 }
 

@@ -22,7 +22,7 @@ public:
 private:
     Ui::RegistrationSystem *ui;
 
-    SystemConfigWidget* system_config_widget{ nullptr };
+    SystemConfigWidgetList* system_config_widget{ nullptr };
 
 private slots:
     void test();

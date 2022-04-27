@@ -1,5 +1,33 @@
 #include "systemconfigwidget.h"
 
+SystemConfigWidgetList::SystemConfigWidgetList(QWidget *parent)
+    : QWidget(parent)
+{
+    QLayout* layout{ new QVBoxLayout(this) };
+    QScrollArea* scrollArea{ new QScrollArea(this) };
+    layout->addWidget(scrollArea);
+    QWidget* central{ new QWidget(this) };
+    scrollArea->setAlignment(Qt::AlignCenter);
+    QLayout* scrollAreaLayout{ new QVBoxLayout(central) };
+
+    QDir jsonDir{ Common::Global::SystemsParamsDir() };
+    for(auto json: jsonDir.entryList(QStringList("*.json"))) {
+        systemConfigWidgets.append(new SystemConfigWidget(Reg::SystemConfig::fromJson(json), this));
+        scrollAreaLayout->addWidget(systemConfigWidgets.last());
+    }
+    scrollArea->setWidget(central);
+
+}
+
+QList<std::shared_ptr<Reg::SystemConfig>> SystemConfigWidgetList::getSystemConfigs()
+{
+    QList<std::shared_ptr<Reg::SystemConfig>> systemConfigList;
+    for(auto systemConfigWidget: systemConfigWidgets)
+        systemConfigList.append(systemConfigWidget->getSystemConfig());
+
+    return systemConfigList;
+}
+
 SystemConfigWidget::SystemConfigWidget(std::shared_ptr<Reg::SystemConfig> system_config,
                                        QWidget *parent)
     : QWidget(parent),
@@ -9,13 +37,15 @@ SystemConfigWidget::SystemConfigWidget(std::shared_ptr<Reg::SystemConfig> system
 {
     QLayout* layout { new QVBoxLayout(this) };
     layout->addWidget(group_box);
-    network_config_widget = new NetworkConfigWidget(system_config->getNetworkConfig(), group_box);
     properties_widget = new PropertiesWidget(system_config->getPropertiesConfig(), group_box);
 
     QVBoxLayout* group_layout { new QVBoxLayout(group_box) };
     group_layout->addWidget(enabled);
-    group_layout->addWidget(network_config_widget);
     group_layout->addWidget(properties_widget);
+    if(system_config->getNetworkConfig() != nullptr) {
+        network_config_widget = new NetworkConfigWidget(system_config->getNetworkConfig(), group_box);
+        group_layout->addWidget(network_config_widget);
+    }
 
     connect(enabled, &QCheckBox::stateChanged,
             this, &SystemConfigWidget::changeEnabled);
@@ -25,13 +55,18 @@ SystemConfigWidget::SystemConfigWidget(std::shared_ptr<Reg::SystemConfig> system
 
 void SystemConfigWidget::changeEnabled()
 {
-    network_config_widget->setEnabled(enabled->checkState());
-    properties_widget->setEnabled(enabled->checkState());
+    if(network_config_widget != nullptr)
+        network_config_widget->setEnabled(enabled->checkState());
+    if(properties_widget != nullptr)
+        properties_widget->setEnabled(enabled->checkState());
+
+    if(system_config != nullptr)
+        system_config->setEnabled(enabled->checkState());
 }
 
 std::shared_ptr<Reg::SystemConfig> SystemConfigWidget::getSystemConfig()
 {
-    if(properties_widget)
+    if(properties_widget != nullptr)
         properties_widget->updateDefaults();
     return system_config;
 }
@@ -55,7 +90,7 @@ QWidget* NetworkConfigWidget::createIpWidget()
 {
     QWidget* ipWidget{ new QWidget(group_box) };
     QHBoxLayout* ipLayout{ new QHBoxLayout(ipWidget) };
-    ipLayout->addWidget(new QLabel("IP: ", ipWidget));
+    ipLayout->addWidget(new ConfigLabel("IP: ", ipWidget));
     ipLayout->addWidget(new QLabel(network_config->getAdress().toString(), ipWidget));
 
     return ipWidget;
@@ -65,7 +100,7 @@ QWidget* NetworkConfigWidget::createPortWidget()
 {
     QWidget* portWidget{ new QWidget(group_box) };
     QHBoxLayout* portLayout{ new QHBoxLayout(portWidget) };
-    portLayout->addWidget(new QLabel("Порт: ", portWidget));
+    portLayout->addWidget(new ConfigLabel("Порт: ", portWidget));
     portLayout->addWidget(new QLabel(QString::number(network_config->getPort()), portWidget));
 
     return portWidget;
@@ -76,7 +111,7 @@ QWidget* NetworkConfigWidget::createProtocolWidget()
     QWidget* protocolWidget{ new QWidget(group_box) };
     QHBoxLayout* protocolLayout{ new QHBoxLayout(protocolWidget) };
     auto protocol{ network_config->getProtocol() };
-    protocolLayout->addWidget(new QLabel("Протокол: ", protocolWidget));
+    protocolLayout->addWidget(new ConfigLabel("Протокол: ", protocolWidget));
     protocolLayout->addWidget(new QLabel(
                                protocol == QAbstractSocket::TcpSocket ? "TCP" :
                               (protocol == QAbstractSocket::UdpSocket ? "UDP" : "Unknown Socket"),
@@ -117,7 +152,7 @@ void PropertiesWidget::updateDefaults()
 PropertyWidget::PropertyWidget(const Reg::Property &property,
                                QWidget *parent)
     : QWidget(parent),
-      label(new QLabel(property.getLabel(), this)),
+      label(new ConfigLabel(property.getLabel(), this)),
       values(new QComboBox(this))
 {
     QLayout* layout{ new QHBoxLayout(this) };

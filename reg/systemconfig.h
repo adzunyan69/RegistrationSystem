@@ -16,9 +16,10 @@ public:
 
     bool save();
 
+    bool isEnabled() const { return enabled; }
+    void setEnabled(bool _enabled) { enabled = _enabled; }
     QString getLabel() const { return label; }
     QString getSystemName() const { return system_name; }
-    bool isEnabled() const { return enabled; }
     auto& getNetworkConfig() { return network_config; }
     auto& getPropertiesConfig() { return properties; }
     auto& getProperties() { return properties->getProperties(); }

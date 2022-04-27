@@ -2,6 +2,7 @@
 #define SYSTEMCONFIGWIDGET_H
 
 #include <QWidget>
+#include <QScrollArea>
 #include <QVBoxLayout>
 #include <QGroupBox>
 #include <QComboBox>
@@ -10,9 +11,22 @@
 #include <QLineEdit>
 #include <reg/systemconfig.h>
 
+class SystemConfigWidget;
 class NetworkConfigWidget;
 class PropertiesWidget;
 class PropertyWidget;
+
+class SystemConfigWidgetList : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit SystemConfigWidgetList(QWidget *parent = nullptr);
+
+    QList<std::shared_ptr<Reg::SystemConfig>> getSystemConfigs();
+private:
+    QList<SystemConfigWidget*> systemConfigWidgets;
+
+};
 
 class SystemConfigWidget : public QWidget
 {
@@ -83,6 +97,17 @@ private:
 
 
 
+};
+
+class ConfigLabel : public QLabel
+{
+    Q_OBJECT
+public:
+    explicit ConfigLabel(const QString &text, QWidget *parent = nullptr) : QLabel(text, parent)
+    {
+        this->setWordWrap(true);
+        this->setFixedWidth(80);
+    }
 };
 
 #endif // SYSTEMCONFIGWIDGET_H

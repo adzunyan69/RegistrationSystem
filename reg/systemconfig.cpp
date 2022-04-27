@@ -43,15 +43,19 @@ std::shared_ptr<SystemConfig> SystemConfig::fromJson(const QString &filename, QS
     const std::shared_ptr<Properties> properties {
             Properties::fromJson(json["properties"].toArray(), error) };
 
-    if(network_config == nullptr || properties == nullptr)
-        return nullptr;
+    if(properties != nullptr &&
+       ((system_name.toLower() == "common" || network_config != nullptr))) {
 
-    return create(filename,
-                  enabled,
-                  system_name,
-                  label,
-                  network_config,
-                  properties);
+        return create(filename,
+                      enabled,
+                      system_name,
+                      label,
+                      network_config,
+                      properties);
+    } else {
+        return nullptr;
+    }
+
 }
 
 QJsonObject SystemConfig::getJsonSystemConfig(const QString &filename, QString &error)
@@ -128,8 +132,8 @@ QString SystemConfig::toString()
             .arg(QString::number(enabled))
             .arg(system_name)
             .arg(label)
-            .arg(network_config->toString())
-            .arg(properties->toString());
+            .arg(network_config ? network_config->toString() : "empty network config")
+            .arg(properties ? properties->toString() : "empty properties");
 }
 
 }
