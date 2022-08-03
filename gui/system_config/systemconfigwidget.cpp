@@ -19,11 +19,23 @@ SystemConfigWidgetList::SystemConfigWidgetList(QWidget *parent)
 
 }
 
-QList<std::shared_ptr<Reg::SystemConfig>> SystemConfigWidgetList::getSystemConfigs()
+std::shared_ptr<Reg::SystemConfig> SystemConfigWidgetList::getCommonConfig() const
+{
+    for(auto systemConfigWidget: systemConfigWidgets) {
+        if(systemConfigWidget->getSystemConfig()->getSystemName() == "common")
+            return systemConfigWidget->getSystemConfig();
+    }
+
+    return  nullptr;
+}
+
+QList<std::shared_ptr<Reg::SystemConfig>> SystemConfigWidgetList::getSystemConfigs() const
 {
     QList<std::shared_ptr<Reg::SystemConfig>> systemConfigList;
-    for(auto systemConfigWidget: systemConfigWidgets)
-        systemConfigList.append(systemConfigWidget->getSystemConfig());
+    for(auto systemConfigWidget: systemConfigWidgets) {
+        if(systemConfigWidget->getSystemConfig()->getSystemName() != "common")
+            systemConfigList.append(systemConfigWidget->getSystemConfig());
+    }
 
     return systemConfigList;
 }
@@ -41,11 +53,11 @@ SystemConfigWidget::SystemConfigWidget(std::shared_ptr<Reg::SystemConfig> system
 
     QVBoxLayout* group_layout { new QVBoxLayout(group_box) };
     group_layout->addWidget(enabled);
-    group_layout->addWidget(properties_widget);
     if(system_config->getNetworkConfig() != nullptr) {
         network_config_widget = new NetworkConfigWidget(system_config->getNetworkConfig(), group_box);
         group_layout->addWidget(network_config_widget);
     }
+    group_layout->addWidget(properties_widget);
 
     connect(enabled, &QCheckBox::stateChanged,
             this, &SystemConfigWidget::changeEnabled);
@@ -81,36 +93,43 @@ NetworkConfigWidget::NetworkConfigWidget(std::shared_ptr<Reg::NetworkConfig> net
     layout->addWidget(group_box);
 
     QVBoxLayout* group_layout{ new QVBoxLayout(group_box) };
-    group_layout->addWidget(createIpWidget());
-    group_layout->addWidget(createPortWidget());
-    group_layout->addWidget(createProtocolWidget());
+    for(auto consumer: network_config->getConsumers()) {
+        QGroupBox *consumerGroupBox{ new QGroupBox(consumer.getName(), group_box) };
+        QLayout *consumerGroupBoxLayout{ new QVBoxLayout(consumerGroupBox) };
+        consumerGroupBoxLayout->addWidget(createIpWidget(consumer));
+        consumerGroupBoxLayout->addWidget(createPortWidget(consumer));
+        consumerGroupBoxLayout->addWidget(createProtocolWidget(consumer));
+
+        group_layout->addWidget(consumerGroupBox);
+
+    }
 }
 
-QWidget* NetworkConfigWidget::createIpWidget()
+QWidget* NetworkConfigWidget::createIpWidget(const Reg::Consumer &consumer)
 {
     QWidget* ipWidget{ new QWidget(group_box) };
     QHBoxLayout* ipLayout{ new QHBoxLayout(ipWidget) };
     ipLayout->addWidget(new ConfigLabel("IP: ", ipWidget));
-    ipLayout->addWidget(new QLabel(network_config->getAdress().toString(), ipWidget));
+    ipLayout->addWidget(new QLabel(consumer.getAdress().toString(), ipWidget));
 
     return ipWidget;
 }
 
-QWidget* NetworkConfigWidget::createPortWidget()
+QWidget* NetworkConfigWidget::createPortWidget(const Reg::Consumer &consumer)
 {
     QWidget* portWidget{ new QWidget(group_box) };
     QHBoxLayout* portLayout{ new QHBoxLayout(portWidget) };
     portLayout->addWidget(new ConfigLabel("Порт: ", portWidget));
-    portLayout->addWidget(new QLabel(QString::number(network_config->getPort()), portWidget));
+    portLayout->addWidget(new QLabel(QString::number(consumer.getPort()), portWidget));
 
     return portWidget;
 }
 
-QWidget* NetworkConfigWidget::createProtocolWidget()
+QWidget* NetworkConfigWidget::createProtocolWidget(const Reg::Consumer &consumer)
 {
     QWidget* protocolWidget{ new QWidget(group_box) };
     QHBoxLayout* protocolLayout{ new QHBoxLayout(protocolWidget) };
-    auto protocol{ network_config->getProtocol() };
+    auto protocol{ consumer.getProtocol() };
     protocolLayout->addWidget(new ConfigLabel("Протокол: ", protocolWidget));
     protocolLayout->addWidget(new QLabel(
                                protocol == QAbstractSocket::TcpSocket ? "TCP" :

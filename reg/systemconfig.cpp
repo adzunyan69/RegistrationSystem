@@ -39,7 +39,7 @@ std::shared_ptr<SystemConfig> SystemConfig::fromJson(const QString &filename, QS
     }
 
     const std::shared_ptr<NetworkConfig> network_config {
-            NetworkConfig::fromJson(json["network-config"].toObject(), error) };
+            NetworkConfig::fromJson(json["network-config"].toArray(), error) };
     const std::shared_ptr<Properties> properties {
             Properties::fromJson(json["properties"].toArray(), error) };
 
@@ -117,7 +117,7 @@ void SystemConfig::write(QJsonObject &json_system_config)
     json_system_config["label"] = label;
     json_system_config["name"] = system_name;
 
-    QJsonObject json_network_config;
+    QJsonArray json_network_config;
     network_config->write(json_network_config);
     json_system_config["network-config"] = json_network_config;
 

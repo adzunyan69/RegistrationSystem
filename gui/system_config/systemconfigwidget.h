@@ -22,7 +22,8 @@ class SystemConfigWidgetList : public QWidget
 public:
     explicit SystemConfigWidgetList(QWidget *parent = nullptr);
 
-    QList<std::shared_ptr<Reg::SystemConfig>> getSystemConfigs();
+    std::shared_ptr<Reg::SystemConfig> getCommonConfig() const;
+    QList<std::shared_ptr<Reg::SystemConfig>> getSystemConfigs() const;
 private:
     QList<SystemConfigWidget*> systemConfigWidgets;
 
@@ -62,9 +63,9 @@ private:
 
     QGroupBox* group_box{ nullptr };
 
-    QWidget* createIpWidget();
-    QWidget* createPortWidget();
-    QWidget* createProtocolWidget();
+    QWidget* createIpWidget(const Reg::Consumer &consumer);
+    QWidget* createPortWidget(const Reg::Consumer &consumer);
+    QWidget* createProtocolWidget(const Reg::Consumer &consumer);
 };
 
 class PropertiesWidget : public QWidget

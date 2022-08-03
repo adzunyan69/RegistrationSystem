@@ -1,4 +1,4 @@
-QT       += core gui network
+QT       += core gui network xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -21,6 +21,8 @@ SOURCES += \
     main.cpp \
     reg/networkconfig.cpp \
     reg/properties.cpp \
+    reg/routedatabuilder.cpp \
+    reg/sender.cpp \
     reg/systemconfig.cpp \
     registrationsystem.cpp
 
@@ -30,6 +32,8 @@ HEADERS += \
     gui/system_config/systemconfigwidget.h \
     reg/networkconfig.h \
     reg/properties.h \
+    reg/routedatabuilder.h \
+    reg/sender.h \
     reg/systemconfig.h \
     registrationsystem.h
 

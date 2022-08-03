@@ -27,7 +27,23 @@ RegistrationSystem::~RegistrationSystem()
 void RegistrationSystem::test()
 {
     auto cfg = system_config_widget->getSystemConfigs();
-    for(auto config: cfg)
+    for(auto config: cfg) {
         qInfo().noquote() << config->toString();
+        if(config->getSystemName().toLower() == "pik") {
+            PikXMLRouteDataBuilder dataBuilder(system_config_widget->getCommonConfig(),
+                                               config);
+            QString xmlPik = dataBuilder.toString();
+            qInfo().noquote() << "XML_PIK: " << xmlPik;
+            Sender *sender{ new Sender(config->getNetworkConfig()->getConsumers().first(), xmlPik) };
+            Receiver *receiver{ new UdpReceiver(config->getNetworkConfig()->getConsumers().first(), this) };
+        } else if(config->getSystemName().toLower() == "atape") {
+            DefaultXMLRouteDataBuilder dataBuilder(system_config_widget->getCommonConfig(),
+                                               config);
+            qInfo().noquote() << "XML_ATAPE: " << dataBuilder.toString();
+        }
+    }
+
+
+
 }
 

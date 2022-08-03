@@ -6,6 +6,8 @@
 #include <QSpacerItem>
 #include <QPushButton>
 #include "gui/system_config/systemconfigwidget.h"
+#include "reg/routedatabuilder.h"
+#include "reg/sender.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class RegistrationSystem; }

@@ -4,35 +4,57 @@
 #include <QHostAddress>
 #include <QDebug>
 #include <QJsonObject>
+#include <QJsonArray>
 
 namespace Reg {
 
-#define make_shared_enabled(name)
+class Consumer;
 
 class NetworkConfig
 {
 public:
-    static std::shared_ptr<NetworkConfig> fromJson(const QJsonObject &json, QString &error);
+    static std::shared_ptr<NetworkConfig> fromJson(const QJsonArray &json, QString &error);
 
-    QHostAddress getAdress() const { return adress; } /*!< Метод, возвращающий IP-адрес системы */
-    quint16 getPort() const { return port; } /*!< Метод, возвращающий порт системы */
-    QAbstractSocket::SocketType getProtocol() const { return protocol; } /*!< Метод, возвращающий испоьзуемый проткоол */
+    QList<Consumer> getConsumers() const { return consumers; }
 
-    void write(QJsonObject &json_network_config);
+    void write(QJsonArray &json_network_config);
     QString toString() const;
 
 private:
     template<typename... T>
     inline static std::shared_ptr<NetworkConfig> create(T&&... t);
 
-    NetworkConfig(const QHostAddress &adress,
-                  const quint16 port,
-                  const QAbstractSocket::SocketType protocol = QAbstractSocket::UdpSocket);
+    NetworkConfig(QList<Consumer> &&consumers);
 
-    const QHostAddress adress; /*!< IP-адрес потребителя */
-    const quint16 port{ 0 }; /*!< Порт потребителя */
-    const QAbstractSocket::SocketType protocol { QAbstractSocket::UnknownSocketType }; /*!< Tcp/Udp протокол */
+    const QList<Consumer> consumers;
 
+
+};
+
+class Consumer
+{
+public:
+    Consumer(const QJsonObject &json_consumer, QString &error);
+
+    QString getName() const { return name; }
+    QString getLabel() const { return label; }
+    QHostAddress getAdress() const { return adress; } /*!< Метод, возвращающий IP-адрес системы */
+    quint16 getPort() const { return port; } /*!< Метод, возвращающий порт системы */
+    quint16 getReceiverPort() const { return receiver_port; }
+    QAbstractSocket::SocketType getProtocol() const { return protocol; } /*!< Метод, возвращающий испоьзуемый проткоол */
+
+    void write(QJsonObject &json_consumer);
+    QString toString() const;
+
+private:
+    QString name{ "consumer-undefined-name" };
+    QString label{ "consumer-undefined-lable" };
+    QHostAddress adress; /*!< IP-адрес потребителя */
+    quint16 port{ 0 }; /*!< Порт потребителя */
+    quint16 receiver_port{ 0 };
+    QAbstractSocket::SocketType protocol { QAbstractSocket::UnknownSocketType }; /*!< Tcp/Udp протокол */
+
+    inline bool isValid() const;
     inline bool isValidAdressAndPort() const;
     inline bool isValidProtocol() const;
 
